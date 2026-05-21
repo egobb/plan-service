@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<planList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          version="1.0"
+          xsi:noNamespaceSchemaLocation="planList.xsd">
+  <output>
+    <base_plan base_plan_id="1001" sell_mode="online" title="Jazz Night at the Riverfront">
+      <plan plan_id="1001"
+            plan_start_date="2026-07-10T20:00:00"
+            plan_end_date="2026-07-10T22:30:00"
+            sell_from="2026-05-01T00:00:00"
+            sell_to="2026-07-10T19:00:00"
+            sold_out="false">
+        <zone zone_id="1" capacity="200" price="35.00" name="Floor" numbered="false"/>
+        <zone zone_id="2" capacity="80" price="55.00" name="Balcony" numbered="true"/>
+      </plan>
+    </base_plan>
+    <base_plan base_plan_id="1002" sell_mode="online" title="Open Air Film Festival">
+      <plan plan_id="1002"
+            plan_start_date="2026-08-01T21:30:00"
+            plan_end_date="2026-08-01T23:30:00"
+            sell_from="2026-06-01T00:00:00"
+            sell_to="2026-08-01T20:00:00"
+            sold_out="false">
+        <zone zone_id="3" capacity="500" price="18.00" name="Lawn" numbered="false"/>
+        <zone zone_id="4" capacity="100" price="28.00" name="Premium" numbered="true"/>
+      </plan>
+    </base_plan>
+    <base_plan base_plan_id="1003" sell_mode="online" title="Chamber Music Evening">
+      <plan plan_id="1003"
+            plan_start_date="2026-09-15T19:00:00"
+            plan_end_date="2026-09-15T21:00:00"
+            sell_from="2026-07-01T00:00:00"
+            sell_to="2026-09-15T18:00:00"
+            sold_out="false">
+        <zone zone_id="5" capacity="150" price="45.00" name="Stalls" numbered="true"/>
+        <zone zone_id="6" capacity="50" price="65.00" name="VIP" numbered="true"/>
+      </plan>
+    </base_plan>
+    <base_plan base_plan_id="1004" sell_mode="offline" title="City Walking Tour (Private)">
+      <plan plan_id="1004"
+            plan_start_date="2026-07-20T10:00:00"
+            plan_end_date="2026-07-20T13:00:00"
+            sell_from="2026-05-01T00:00:00"
+            sell_to="2026-07-20T09:00:00"
+            sold_out="false">
+        <zone zone_id="7" capacity="20" price="30.00" name="General" numbered="false"/>
+      </plan>
+    </base_plan>
+  </output>
+</planList>

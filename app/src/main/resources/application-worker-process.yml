@@ -1,0 +1,17 @@
+spring:
+  sql:
+    init:
+      mode: never
+
+worker:
+  lock:
+    # worker-process scales via SELECT ... FOR UPDATE SKIP LOCKED.
+    # It must NOT use a distributed lock.
+    enabled: false
+  process:
+    poll-interval-ms: 2000
+    batch-size: 200
+    max-attempts: 5
+    # Crash-recovery: requeue PROCESSING rows back to PENDING when claimed_at is too old.
+    requeue-interval-ms: 60000
+    stuck-ttl-ms: 600000

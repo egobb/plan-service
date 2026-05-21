@@ -1,0 +1,90 @@
+app:
+  mode: api
+
+api:
+  # Default to UTC to keep the API deterministic across deployments.
+  # Override with API_TIMEZONE if a different rendering timezone is needed.
+  timezone: ${API_TIMEZONE:UTC}
+
+spring:
+  datasource:
+    url: ${JDBC_URL:jdbc:postgresql://localhost:5432/egobb}
+    username: ${DB_USER:egobb}
+    password: ${DB_PASSWORD:egobb}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+      connection-timeout: ${DB_POOL_CONN_TIMEOUT_MS:2000}
+      validation-timeout: ${DB_POOL_VALIDATION_TIMEOUT_MS:1000}
+      idle-timeout: ${DB_POOL_IDLE_TIMEOUT_MS:600000}
+      max-lifetime: ${DB_POOL_MAX_LIFETIME_MS:1800000}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+    prometheus:
+      enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      service: plan-service
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.95,0.99
+
+# Resilience guards:
+# - bulkhead for /search protects the DB connection pool (limits in-flight requests)
+resilience4j:
+  bulkhead:
+    instances:
+      searchApi:
+        # Keep this <= your DB pool size (DB_POOL_MAX). Default is conservative.
+        maxConcurrentCalls: ${SEARCH_MAX_CONCURRENT_CALLS:8}
+        maxWaitDuration: ${SEARCH_MAX_WAIT_DURATION:0ms}
+provider:
+  id: ${PROVIDER_ID:provider-1}
+  base-url: ${PROVIDER_BASE_URL:https://provider.example.com}
+  snapshot-path: ${PROVIDER_SNAPSHOT_PATH:/api/events}
+  # Optional: provide the full URL directly (takes precedence over base-url+snapshot-path)
+  snapshot-url: ${PROVIDER_SNAPSHOT_URL:}
+  # Backward compatibility alias (same semantics as snapshot-url)
+  url: ${PROVIDER_URL:}
+  timeout: ${PROVIDER_TIMEOUT:PT5S}
+  connect-timeout: ${PROVIDER_CONNECT_TIMEOUT:PT2S}
+  retry:
+    max-attempts: ${PROVIDER_RETRY_MAX_ATTEMPTS:3}
+    initial-backoff: ${PROVIDER_RETRY_INITIAL_BACKOFF:PT0.2S}
+    max-backoff: ${PROVIDER_RETRY_MAX_BACKOFF:PT2S}
+    jitter: ${PROVIDER_RETRY_JITTER:0.2}
+    retry-on-parse-errors: ${PROVIDER_RETRY_ON_PARSE_ERRORS:false}
+
+worker:
+  poll-interval-ms: ${WORKER_POLL_INTERVAL_MS:30000}
+  lock:
+    enabled: ${WORKER_LOCK_ENABLED:true}
+    name: ${WORKER_LOCK_NAME:worker:poll}
+
+# Optional multi-provider setup.
+# If providers.items is present, it takes precedence over provider.*.
+#
+# providers:
+#   items:
+#     - id: snapshot-provider-a
+#       base-url: https://provider-a.example.com
+#       snapshot-path: /api/events
+#     - id: snapshot-provider-b
+#       base-url: https://provider-b.example.com
+#       snapshot-path: /api/events

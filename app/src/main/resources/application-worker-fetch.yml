@@ -1,0 +1,13 @@
+spring:
+  sql:
+    init:
+      mode: never
+
+worker:
+  poll-interval-ms: 30000
+  lock:
+    enabled: true
+  fetch:
+    poll-interval-ms: 30000
+    batch-size: 500
+    lock-name: "worker:fetch"

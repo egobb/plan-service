@@ -1,0 +1,26 @@
+# Maven build output
+target/
+**/target/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.settings/
+.classpath
+.project
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and local overrides
+.env
+*.env.local
+docker-compose.override.yml
+
+# Logs
+*.log
+.tool-versions

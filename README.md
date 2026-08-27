@@ -1,10 +1,16 @@
-# Plan Service (v0.10.0)
+# Snapshot Ingestion (`plan-service`) — v0.10.0
 
 - A **fetch worker** periodically downloads the provider **XML snapshot** and **stages** it in Postgres (DB-queue style).
 - A **process worker** consumes staged rows in batches and **upserts** canonical `plans` in Postgres.
-- The **API** exposes `GET /search` and serves results **strictly from Postgres** (never calling the provider at request time), ensuring stable latency and allowing **historical** queries even if a plan disappears from the provider.
+- The **API** exposes `GET /search` and serves results **strictly from Postgres** (never calling the provider at request time), keeping provider latency and provider failures outside the request path while allowing **historical** queries even if a plan disappears from the provider.
 
 Tech: **Java 17**, **Spring Boot 3**, **Postgres**, Docker.
+
+## Project links
+
+- [Portfolio case study](https://enriquegoberna.com/projects/snapshot-ingestion/)
+- [When Postgres Is Enough: Building a Resilient Snapshot Ingestion Pipeline Without Kafka](https://enriquegoberna.com/posts/when-postgres-is-enough-building-a-resilient-snapshot-ingestion-pipeline-without-kafka/)
+- [Engineering portfolio](https://enriquegoberna.com/)
 
 ---
 
@@ -185,13 +191,15 @@ Custom domain metrics include:
 
 ---
 
-## Operational story (what I watch, what I alert on, and what I do)
+## Operational signals and response paths
 
-I treat this as two SLO surfaces: the **public API** (search latency + error rate) and the **ingestion freshness** (how quickly the DB reflects the provider snapshot). For the API I watch `http.server.requests` for `/search` (p95/p99 + 5xx), plus the custom `search_rejected_total{reason="bulkhead_full"}` which tells me if the service is protecting the DB under load.
+The current metrics naturally split into two operational surfaces: the **public API** and **ingestion freshness**. This repository does not publish a measured production SLO or latency baseline yet.
 
-For ingestion I watch provider fetch success/failures and duration, processing throughput/failures, and (most importantly) **lag** via the age of the oldest `PENDING` staged row. If the provider starts failing, bounded retry/backoff in the fetch worker avoids aggressive hammering while the API remains stable (it serves historical data from Postgres). The playbook is: verify if failures are network/5xx/parse, back off or pause `worker-fetch` if needed, and rely on the last successful snapshot until the provider recovers.
+For the API, the relevant signals are `http.server.requests` for `/search` plus the custom `search_rejected_total{reason="bulkhead_full"}`, which shows when the local bulkhead is protecting the database from additional in-flight work.
 
-If staging lag grows, I scale `worker-process` horizontally (safe via `SKIP LOCKED`), validate Postgres connection headroom, and check for slow queries or lock contention. If bulkhead rejects increase, I lower `SEARCH_MAX_CONCURRENT_CALLS` or adjust DB pool sizing and investigate DB saturation.
+For ingestion, provider fetch outcomes/duration, processing throughput/failures, and the age of the oldest `PENDING` staged row expose whether the pipeline is falling behind. If provider requests fail repeatedly, bounded retry/backoff avoids aggressive retries while the API continues serving the last canonical data from Postgres. The response path is to distinguish network/5xx/parse failures, back off or pause `worker-fetch` if needed, and resume once the provider boundary recovers.
+
+If staging lag grows, `worker-process` can be scaled horizontally via `SKIP LOCKED`, subject to PostgreSQL connection headroom and contention. If bulkhead rejects increase, the useful next step is to inspect database saturation and measured request behavior before changing concurrency or pool limits.
 
 ---
 
@@ -205,7 +213,7 @@ If staging lag grows, I scale `worker-process` horizontally (safe via `SKIP LOCK
 
 ### Why API never calls the provider?
 
-- Stable latency and predictable SLOs.
+- Keeps provider latency and provider failures outside the request path.
 - Enables historical queries even when a plan disappears from the provider snapshot.
 - Trade-off: freshness depends on polling interval and ingestion health.
 

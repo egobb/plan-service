@@ -20,3 +20,12 @@ jobs:
         run: ./mvnw -f app/pom.xml -B -DskipITs package
       - name: Run integration tests
         run: ./mvnw -f app/pom.xml -B verify
+
+  compose-reproducibility:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify default, recovery and scaled Compose paths
+        run: bash scripts/verify-compose.sh

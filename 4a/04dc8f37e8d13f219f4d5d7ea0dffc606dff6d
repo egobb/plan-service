@@ -1,0 +1,29 @@
+Makefile
+  s_bf7d0343972a67::t_e9138bce4cfea5 2,17-18
+demo/advisory-lock-demo.md
+  s_bf7d0343972a67::t_e16e32eff7acdc 98-102,105,110,118,123
+demo/demo-backlog-scale-out.md
+  s_bf7d0343972a67::t_ba06a9b7a870fd 122,126,129-131,136-139,141-144,171
+deploy/docker-compose.scaled.yml
+  s_bf7d0343972a67::t_b05e95086df1b1 1-20
+docs/architecture.md
+  s_bf7d0343972a67::t_b246271662ed53 5,13
+README.md
+  s_bf7d0343972a67::t_af04dc9224987f 1,7,17-25,28-29,31,35-38,40-48,54-58,64-65,70-119,121-160,172-175,215,217,219-222,224-226,228-230,232-233,235-238,240-242,244-245,247-249,251,253-255,257,259-260,262-263,265-267,269-271,275,278-279,284,290-342,344-370,376-379,384-391,407-477,497
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4a04dc8f37e8d13f219f4d5d7ea0dffc606dff6d",
+  "prompts": {},
+  "sessions": {
+    "s_bf7d0343972a67": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "028afa59-b8be-4548-ac9a-d74c2068e456",
+        "model": "unknown"
+      },
+      "human_author": "Enrique Goberna <enriquegg@ext.zara.com>"
+    }
+  }
+}

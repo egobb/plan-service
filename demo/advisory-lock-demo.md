@@ -95,14 +95,19 @@ docker compose -f deploy/docker-compose.yml logs -f worker-fetch
 
 ## 4) Show the advisory lock signal in Prometheus metrics
 
+> `egobb_scheduler_skips_total` is a **`worker-fetch`** metric. Only the `api` port is
+> published, so scrape a fetch container directly: `docker compose -f deploy/docker-compose.yml
+> exec worker-fetch wget -qO- http://localhost:8080/actuator/prometheus`. (With 5 replicas,
+> each has its own counter; check a few, or pass a specific container to `docker exec`.)
+
 ### Fetch Prometheus scrape output
 ```bash
-curl -s http://localhost:18080/actuator/prometheus | head
+docker compose -f deploy/docker-compose.yml exec worker-fetch wget -qO- http://localhost:8080/actuator/prometheus | head
 ```
 
 ### Filter for scheduler skips (lock contention)
 ```bash
-curl -s http://localhost:18080/actuator/prometheus | grep egobb_scheduler_skips_total
+docker compose -f deploy/docker-compose.yml exec worker-fetch wget -qO- http://localhost:8080/actuator/prometheus | grep egobb_scheduler_skips_total
 ```
 
 You should see a counter with something like:
@@ -110,12 +115,12 @@ You should see a counter with something like:
 
 ### Broader filter (in case metric names differ)
 ```bash
-curl -s http://localhost:18080/actuator/prometheus | grep -E "scheduler|lock|advisory|fetch"
+docker compose -f deploy/docker-compose.yml exec worker-fetch wget -qO- http://localhost:8080/actuator/prometheus | grep -E "scheduler|lock|advisory|fetch"
 ```
 
 ---
 
-## 5) Show advisory locks in Postgres (optional but great for the interview)
+## 5) Inspect advisory locks in Postgres (optional)
 
 ### Open a psql session
 ```bash

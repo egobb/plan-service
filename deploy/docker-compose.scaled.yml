@@ -1,0 +1,20 @@
+# Overlay for local scaling: `make run-scaled` (or `docker compose -f deploy/docker-compose.yml
+# -f deploy/docker-compose.scaled.yml ...`).
+#
+# The base compose file publishes the API directly on host port 18080, which is fine for a
+# single replica but collides as soon as `--scale api=2` is used. This overlay moves the
+# host binding from `api` to Traefik so multiple `api` replicas can run behind the local
+# load balancer. The base file is unchanged, so plain `make run` keeps hitting `api:8080`
+# directly.
+services:
+  api:
+    # Drop the direct host port; replicas are reached only through Traefik.
+    # `expose: ["8080"]` and the `traefik.*` routing labels stay from the base file.
+    ports: !reset []
+
+  traefik:
+    # Publish the `web` entrypoint (:8080) so the load balancer is reachable on the host,
+    # alongside the dashboard entrypoint already mapped in the base file.
+    ports:
+      - "18080:8080"
+      - "18081:8081"

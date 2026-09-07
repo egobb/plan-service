@@ -119,19 +119,29 @@ docker compose -f deploy/docker-compose.yml exec -T db   psql -U egobb -d egobb 
 
 **Expected (before scaling):**
 - `PENDING` grows (or stays high),
-- `DONE/PROCESSED` increases more slowly.
+- `DONE` increases more slowly.
 
 (Optional) check recent runs:
 ```bash
-docker compose -f deploy/docker-compose.yml exec -T db   psql -U egobb -d egobb -c   "select started_at, status, staged_plans_count, processed_plans_count, failed_plans_count from ingestion_runs order by started_at desc limit 5;"
+docker compose -f deploy/docker-compose.yml exec -T db   psql -U egobb -d egobb -c   "select started_at, status, staged_plans_count from ingestion_runs order by started_at desc limit 5;"
 ```
+
+> `ingestion_runs.processed_plans_count` / `failed_plans_count` are reserved columns that
+> the process worker does not currently update; rely on the `staging_plans` state counts.
 
 ---
 
 ### 3) (Optional) Correlate with Prometheus metrics
 
+These are worker metrics; only the `api` port is published, so scrape the worker containers
+directly (`provider_snapshot` / `stage_snapshot` on `worker-fetch`, `process_plan` /
+`staging_requeued` on `worker-process`):
+
 ```bash
-curl -s http://localhost:18080/actuator/prometheus | egrep "egobb_(provider_snapshot_total|stage_snapshot_total|process_plan_total|staging_requeued_total)"
+docker compose -f deploy/docker-compose.yml exec worker-fetch \
+  wget -qO- http://localhost:8080/actuator/prometheus | egrep "egobb_(provider_snapshot_total|stage_snapshot_total)"
+docker compose -f deploy/docker-compose.yml exec worker-process \
+  wget -qO- http://localhost:8080/actuator/prometheus | egrep "egobb_(process_plan_total|staging_requeued_total)"
 ```
 
 **What you’re looking for:**
@@ -158,7 +168,7 @@ docker compose -f deploy/docker-compose.yml exec -T db   psql -U egobb -d egobb 
 
 **Expected (after scaling):**
 - `PENDING` starts decreasing (or stops growing),
-- `DONE/PROCESSED` grows noticeably faster.
+- `DONE` grows noticeably faster.
 
 ---
 

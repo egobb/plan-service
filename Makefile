@@ -1,4 +1,5 @@
 COMPOSE = docker compose -f deploy/docker-compose.yml
+COMPOSE_SCALED = $(COMPOSE) -f deploy/docker-compose.scaled.yml
 MVN = bash ./mvnw -f app/pom.xml
 
 # Defaults for local scaling
@@ -13,8 +14,8 @@ help: ## Show available targets
 run: ## Run full stack (db + api + workers) using docker compose
 	$(COMPOSE) up -d --build
 
-run-scaled: ## Run stack and scale api/worker-process locally (API=K PROCESS=N)
-	$(COMPOSE) up -d --build --scale api=$(API) --scale worker-process=$(PROCESS)
+run-scaled: ## Run stack via the scaling overlay and scale api/worker-process locally (API=K PROCESS=N)
+	$(COMPOSE_SCALED) up -d --build --scale api=$(API) --scale worker-process=$(PROCESS)
 
 run-api: ## Run API locally (requires DB running)
 	$(MVN) -q -DskipTests spring-boot:run
